@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BookVerse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f2e9; --ink:#221c2e; --ink-soft:#5c5468;
+  --card:#fffaf1; --line:#e4d9c4;
+  --indigo:#2b2350; --indigo2:#4a3d82; --coral:#ff6f59; --coral2:#ffa26b;
+  --gold:#c99a3d;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#161225; --ink:#f0ece0; --ink-soft:#b8afc9;
+    --card:#211c33; --line:#3a3352;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#161225; --ink:#f0ece0; --ink-soft:#b8afc9;
+  --card:#211c33; --line:#3a3352;
+}
+html{scroll-padding-top:calc(64px + env(safe-area-inset-top,0px)); scroll-behavior:smooth;}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--bg); color:var(--ink); font-family:'Inter',system-ui,sans-serif;}
+.display{font-family:'Fraunces',Georgia,serif;}
+a{color:inherit;}
+
+/* Navbar */
+nav{
+  position:sticky; top:0; z-index:40; display:flex; align-items:center; justify-content:space-between;
+  padding:14px 28px; padding-top:calc(14px + env(safe-area-inset-top,0px));
+  background:var(--indigo); color:#fff;
+}
+.logo{font-family:'Fraunces',serif; font-weight:900; font-size:1.3rem; letter-spacing:-0.01em; display:flex; align-items:center; gap:8px;}
+.navlinks{display:flex; gap:26px; font-size:0.92rem; font-weight:500;}
+.navlinks a{text-decoration:none; opacity:0.85; transition:opacity .15s;}
+.navlinks a:hover{opacity:1;}
+.navlinks{display:none;}
+@media(min-width:640px){.navlinks{display:flex;}}
+
+/* Hero */
+.hero{
+  background:linear-gradient(150deg, var(--indigo) 0%, var(--indigo2) 65%, var(--coral) 130%);
+  color:#fff; padding:64px 20px 84px; text-align:center; position:relative; overflow:hidden;
+}
+.stack{position:absolute; display:flex; gap:6px; opacity:0.16; z-index:0;}
+.stack span{display:block; width:34px; height:110px; border-radius:4px; background:#fff;}
+.stack.s1{top:20px; left:6%; transform:rotate(-8deg);}
+.stack.s2{bottom:10px; right:8%; transform:rotate(10deg);}
+.hero-inner{position:relative; z-index:1; max-width:680px; margin:0 auto;}
+.hero h1{font-size:clamp(2.1rem,5.5vw,3.4rem); margin:0 0 12px; font-weight:700; letter-spacing:-0.01em;}
+.hero p{color:rgba(255,255,255,0.85); font-size:1.05rem; margin:0 0 30px;}
+.search-bar{display:flex; gap:10px; max-width:560px; margin:0 auto; flex-wrap:wrap;}
+#query{
+  flex:1 1 260px; padding:15px 18px; font-size:1rem; border:none; border-radius:12px;
+  background:#fff; color:var(--ink); font-family:inherit;
+}
+#query:focus{outline:3px solid var(--coral2); outline-offset:1px;}
+button#go{
+  padding:15px 28px; font-size:1rem; font-weight:700; background:var(--coral); color:#fff;
+  border:none; border-radius:12px; cursor:pointer; font-family:inherit; transition:transform .12s, background .15s;
+}
+button#go:hover{background:var(--coral2);}
+button#go:active{transform:scale(0.97);}
+.hero-hint{margin-top:14px; font-size:0.82rem; color:rgba(255,255,255,0.7);}
+
+.wrap{max-width:1100px; margin:0 auto; padding:0 20px;}
+section.block{padding:52px 0;}
+.block h2{display:flex; align-items:baseline; gap:10px; font-size:1.5rem; margin:0 0 22px;}
+.block h2 .sub{font-size:0.85rem; color:var(--ink-soft); font-weight:400; font-family:'Inter',sans-serif;}
+
+/* Genre grid */
+.genre-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:12px;}
+.genre-chip{
+  background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 14px;
+  cursor:pointer; text-align:center; transition:transform .12s, border-color .15s;
+}
+.genre-chip:hover{transform:translateY(-3px); border-color:var(--coral);}
+.genre-chip .emoji{font-size:1.5rem; display:block; margin-bottom:6px;}
+.genre-chip .name{font-size:0.82rem; font-weight:600;}
+.genre-chip .count{font-size:0.72rem; color:var(--ink-soft);}
+
+/* Book grid & cards */
+.grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:18px;}
+.book-card{
+  background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden;
+  display:flex; flex-direction:column; cursor:pointer; transition:transform .14s, box-shadow .14s;
+}
+.book-card:hover{transform:translateY(-4px); box-shadow:0 10px 28px rgba(0,0,0,0.14);}
+.cover{position:relative; height:140px; display:flex; align-items:flex-end; padding:12px; overflow:hidden;}
+.cover::before{content:""; position:absolute; inset:0; opacity:0.5;
+  background-image:repeating-linear-gradient(115deg, rgba(255,255,255,0.14) 0 2px, transparent 2px 14px);}
+.cover .cg{position:relative; z-index:1; font-size:0.65rem; font-weight:700; color:rgba(255,255,255,0.85); text-transform:uppercase; letter-spacing:0.05em;}
+.cover .ct{position:relative; z-index:1; font-family:'Fraunces',serif; font-weight:700; font-size:1.05rem; color:#fff; line-height:1.18; text-shadow:0 1px 4px rgba(0,0,0,0.25); margin-top:2px;}
+.card-body{padding:14px 16px 16px; display:flex; flex-direction:column; gap:6px; flex-grow:1;}
+.card-body .author{color:var(--ink-soft); font-size:0.85rem; margin:0;}
+.meta-row{display:flex; gap:8px; align-items:center; font-size:0.78rem; flex-wrap:wrap;}
+.rating{color:var(--gold); font-weight:700;}
+.dot{color:var(--line);}
+.card-body .desc{font-size:0.85rem; line-height:1.45; color:var(--ink); margin:2px 0 0;}
+
+/* Filter bar */
+.filter-bar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:20px;}
+.filter-bar select, .filter-bar button.clear{
+  padding:9px 12px; border-radius:8px; border:1px solid var(--line); background:var(--card);
+  color:var(--ink); font-family:inherit; font-size:0.85rem; cursor:pointer;
+}
+.filter-bar button.clear{color:var(--coral); font-weight:600; border-color:var(--coral);}
+
+#message{
+  max-width:520px; margin:0 auto 30px; padding:16px 20px; background:var(--card);
+  border:1px solid var(--line); border-left:4px solid var(--coral); border-radius:8px;
+  color:var(--ink-soft); text-align:center; display:none;
+}
+
+/* Modal */
+.overlay{position:fixed; inset:0; background:rgba(10,8,20,0.6); display:none; align-items:center; justify-content:center; z-index:100; padding:20px;}
+.overlay.open{display:flex;}
+.modal{
+  background:var(--card); border-radius:16px; max-width:620px; width:100%; max-height:86vh; overflow-y:auto;
+  padding:0; position:relative;
+}
+.modal .m-cover{height:150px; display:flex; align-items:flex-end; padding:22px; position:relative; overflow:hidden;}
+.modal .m-cover::before{content:""; position:absolute; inset:0; opacity:0.5;
+  background-image:repeating-linear-gradient(115deg, rgba(255,255,255,0.14) 0 2px, transparent 2px 14px);}
+.modal .m-cover .ct{position:relative; z-index:1; font-family:'Fraunces',serif; font-weight:900; font-size:1.7rem; color:#fff; text-shadow:0 2px 6px rgba(0,0,0,0.3);}
+.modal .m-body{padding:22px 26px 28px;}
+.close-btn{
+  position:absolute; top:12px; right:14px; background:rgba(0,0,0,0.25); color:#fff; border:none;
+  width:30px; height:30px; border-radius:50%; font-size:1.1rem; cursor:pointer; z-index:2;
+}
+.m-author{color:var(--ink-soft); margin:0 0 4px;}
+.m-meta{display:flex; flex-wrap:wrap; gap:8px 14px; font-size:0.85rem; color:var(--ink-soft); margin:10px 0 16px;}
+.m-meta b{color:var(--ink);}
+.m-section{margin-top:16px;}
+.m-section h4{margin:0 0 6px; font-size:0.82rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--gold);}
+.m-section p, .m-section div{font-size:0.92rem; line-height:1.6;}
+.tag{display:inline-block; background:var(--bg); border:1px solid var(--line); border-radius:20px; padding:3px 10px; font-size:0.76rem; margin:0 6px 6px 0;}
+.similar-link{display:inline-block; margin:0 8px 6px 0; padding:5px 10px; border:1px solid var(--line); border-radius:8px; font-size:0.8rem; cursor:pointer; background:var(--bg);}
+.similar-link:hover{border-color:var(--coral);}
+
+footer{text-align:center; margin-top:20px; padding:30px 20px 50px; color:var(--ink-soft); font-size:0.8rem;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">📚 BookVerse</div>
+  <div class="navlinks">
+    <a href="#home">Home</a>
+    <a href="#explore">Explore</a>
+    <a href="#genres">Genres</a>
+    <a href="#about">About</a>
+  </div>
+</nav>
+
+<header class="hero" id="home">
+  <div class="stack s1"><span></span><span style="height:80px"></span><span style="height:130px"></span></div>
+  <div class="stack s2"><span style="height:90px"></span><span></span><span style="height:100px"></span></div>
+  <div class="hero-inner">
+    <h1 class="display">Find Your Next Favorite Book</h1>
+    <p>Search by title, author, genre, character, mood, or topic — even things like "finance" or "AI" work.</p>
+    <div class="search-bar">
+      <input type="text" id="query" placeholder="Try: fantasy, finance, Jane Austen, psychology...">
+      <button id="go">Search</button>
+    </div>
+    <p class="hero-hint">30+ genres and subgenres, from Dark Fantasy to Business &amp; Finance to True Crime.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section class="block" id="message-block">
+    <div id="message"></div>
+  </section>
+
+  <section class="block" id="genres">
+    <h2 class="display">Explore by Genre <span class="sub">tap a genre to browse it</span></h2>
+    <div class="genre-grid" id="genreGrid"></div>
+  </section>
+
+  <section class="block" id="trending">
+    <h2 class="display">Trending Reads <span class="sub">highest rated right now</span></h2>
+    <div class="grid" id="trendingGrid"></div>
+  </section>
+
+  <section class="block" id="recommended">
+    <h2 class="display">Recommended For You <span class="sub">a fresh mix every time</span></h2>
+    <div class="grid" id="recGrid"></div>
+  </section>
+
+  <section class="block" id="explore">
+    <h2 class="display" id="resultsHeading">Explore the Collection</h2>
+    <div class="filter-bar">
+      <select id="genreFilter"></select>
+      <select id="sortFilter">
+        <option value="rating">Sort: Rating</option>
+        <option value="newest">Sort: Newest</option>
+        <option value="oldest">Sort: Oldest</option>
+        <option value="title">Sort: Title A-Z</option>
+      </select>
+      <button class="clear" id="clearBtn" type="button">Clear filters</button>
+    </div>
+    <div class="grid" id="resultsGrid"></div>
+  </section>
+
+  <section class="block" id="about">
+    <h2 class="display">About BookVerse</h2>
+    <p style="max-width:640px; color:var(--ink-soft); line-height:1.7;">
+      BookVerse is a demo book-discovery app with a built-in sample dataset — no account, backend,
+      or API key needed. Search matches titles, authors, genres, characters, and related keywords
+      (so "money" finds finance books, "AI" finds tech books, and so on). All data is for demonstration only.
+    </p>
+  </section>
+
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<footer>Sample recommendations for demo purposes — not live book data.</footer>
+
+<script>
+/* ---------- Genre buckets (used for Explore-by-Genre + filter dropdown) ---------- */
+const genreList = [
+  ["Fantasy","🐉"], ["Dark Fantasy","🗡️"], ["Science Fiction","🚀"], ["Romance","💗"],
+  ["Mystery","🔍"], ["Thriller","🕵️"], ["Horror","👻"], ["Historical Fiction","🏰"],
+  ["Adventure","🧭"], ["Dystopian","🏙️"], ["Young Adult","🎒"], ["Classic Literature","📖"],
+  ["Literary Fiction","✒️"], ["Comedy","😂"], ["Poetry","🌸"], ["Self-Help","🌱"],
+  ["Psychology","🧠"], ["Philosophy","🦉"], ["Biography","👤"], ["Business & Finance","💼"],
+  ["Technology & AI","💻"], ["Science & Math","🔬"], ["History & Politics","🏛️"], ["Travel","✈️"],
+  ["Health & Spirituality","🧘"], ["Mythology","⚡"], ["True Crime","🩸"], ["Memoir & Essays","📝"],
+  ["Nature & Environment","🌿"], ["Sports","🏆"], ["Cooking","🍳"]
+];
+const genreColors = {
+  "Fantasy":["#3b5d46","#6f8f5a"], "Dark Fantasy":["#241a2e","#5a2a5c"], "Science Fiction":["#1f3a5c","#2f7a8c"],
+  "Romance":["#6e2d40","#b3546b"], "Mystery":["#3c2233","#6b3a4a"], "Thriller":["#26201f","#7a1f1f"],
+  "Horror":["#1a1414","#5c1f24"], "Historical Fiction":["#4a3524","#8c6a3f"], "Adventure":["#3d5c2e","#7a9c3f"],
+  "Dystopian":["#33363a","#6b5c46"], "Young Adult":["#2e4a63","#4f8ca8"], "Classic Literature":["#3a3324","#8c7a3f"],
+  "Literary Fiction":["#2c2440","#5a4a8c"], "Comedy":["#5c3d1f","#c98a3f"], "Poetry":["#5c2140","#a8548c"],
+  "Self-Help":["#1f4d4d","#3f8f8f"], "Psychology":["#3a2440","#6b3f8c"], "Philosophy":["#2a2a3a","#5a5a7a"],
+  "Biography":["#3a2d52","#7a5fa0"], "Business & Finance":["#1c3a52","#2f6690"], "Technology & AI":["#132b3a","#1f6b8c"],
+  "Science & Math":["#1f2e4a","#3f6a9c"], "History & Politics":["#3a2e1f","#8c5f3f"], "Travel":["#1f4a3f","#3f9c7a"],
+  "Health & Spirituality":["#2e4a2e","#6f9c6f"], "Mythology":["#4a1f3a","#9c3f7a"], "True Crime":["#241414","#5c2424"],
+  "Memoir & Essays":["#3a3424","#8c7f4a"], "Nature & Environment":["#1f4530","#4a8c5f"], "Sports":["#3a1f1f","#8c3f3f"],
+  "Cooking":["#4a2e1f","#c9773f"]
+};
+const genreSynonyms = {
+  "Business & Finance": ["finance","financial","money","invest","investing","investor","economics","economy","entrepreneur","entrepreneurship","startup","business","leadership","productivity"],
+  "Technology & AI": ["ai","artificial intelligence","machine learning","programming","coding","code","computer science","software","tech","data science","algorithm"],
+  "Psychology": ["psychology","mind","behavior","behaviour","brain","therapy","emotions"],
+  "Philosophy": ["philosophy","stoic","stoicism","ethics","meaning of life"],
+  "Poetry": ["poetry","poem","poems","verse"],
+  "Self-Help": ["self help","self-help","habits","motivation","personal growth","personal development","mindset"],
+  "Health & Spirituality": ["health","wellness","spirituality","spiritual","religion","mindfulness","meditation","yoga"],
+  "History & Politics": ["history","historical","politics","political","war","government"],
+  "Science & Math": ["science","physics","math","mathematics","biology","chemistry","astronomy","cosmos"],
+  "True Crime": ["true crime","serial killer","crime case"],
+  "Mythology": ["mythology","myth","myths","gods","greek myth","norse myth"],
+  "Nature & Environment": ["nature","environment","climate","ecology","wildlife"],
+  "Sports": ["sports","sport","athlete","football","basketball","running"],
+  "Cooking": ["cooking","cookbook","recipes","food","culinary"],
+  "Travel": ["travel","journey abroad","backpacking"],
+  "Memoir & Essays": ["memoir","essays","essay"],
+  "Comedy": ["comedy","funny","humor","humour"],
+  "Young Adult": ["ya","young adult","teen"],
+  "Classic Literature": ["classic","classics"],
+  "Dark Fantasy": ["grimdark"],
+  "Dystopian": ["dystopia"]
+};
+
+/* ---------- Dataset ---------- */
+const books = [
+{title:"The Hobbit",author:"J.R.R. Tolkien",genre:"Fantasy",year:1937,rating:4.7,pages:310,lang:"English",
+ desc:"A reluctant homebody joins dwarves on a quest to reclaim treasure from a dragon.",
+ summary:"Bilbo Baggins is swept from his quiet hobbit-hole by the wizard Gandalf and thirteen dwarves seeking to reclaim their mountain home from the dragon Smaug, facing trolls, goblins, and a riddle-game with a strange creature named Gollum along the way.",
+ characters:["Bilbo Baggins","Gandalf","Thorin Oakenshield"], themes:["quest","courage","home"],
+ why:"A warm, classic entry point into epic fantasy with real heart and humor.", similar:["Mistborn: The Final Empire","The Name of the Wind"]},
+{title:"Mistborn: The Final Empire",author:"Brandon Sanderson",genre:"Fantasy",year:2006,rating:4.7,pages:541,lang:"English",
+ desc:"A street urchin with rare abilities joins a heist to overthrow an immortal tyrant.",
+ summary:"In a world where ash falls from the sky, a thousand-year-old tyrant holds absolute power. A street thief named Vin discovers rare magical abilities and joins a crew planning the impossible: a heist to topple an empire.",
+ characters:["Vin","Kelsier","The Lord Ruler"], themes:["rebellion","power","found family"],
+ why:"Inventive magic system plus a genuinely satisfying heist plot.", similar:["The Hobbit","A Game of Thrones"]},
+{title:"The Poppy War",author:"R.F. Kuang",genre:"Dark Fantasy",year:2018,rating:4.4,pages:544,lang:"English",
+ desc:"A war orphan's rise through a military academy spirals into a brutal reckoning with power and vengeance.",
+ summary:"Rin tests into an elite military academy to escape an arranged marriage, only to discover a talent for shamanism as her homeland is dragged into a devastating war, forcing choices that blur the line between hero and monster.",
+ characters:["Rin","Altan Trengsin"], themes:["war","power","revenge"],
+ why:"Grounded, unflinching fantasy inspired by real 20th-century history.", similar:["A Game of Thrones","Circe"]},
+
+{title:"Dune",author:"Frank Herbert",genre:"Science Fiction",year:1965,rating:4.7,pages:412,lang:"English",
+ desc:"A young heir navigates politics and prophecy on a harsh desert planet rich in a precious resource.",
+ summary:"When House Atreides is granted stewardship of the desert planet Arrakis, young Paul Atreides is thrust into betrayal and prophecy, forced into the deep desert among the native Fremen as he begins a transformation that will reshape the galaxy.",
+ characters:["Paul Atreides","Lady Jessica","Duke Leto Atreides"], themes:["power","ecology","destiny"],
+ why:"The genre-defining epic of politics, religion, and ecology in space.", similar:["Foundation","Project Hail Mary"]},
+{title:"Project Hail Mary",author:"Andy Weir",genre:"Science Fiction",year:2021,rating:4.8,pages:496,lang:"English",
+ desc:"A lone astronaut wakes with no memory and must save humanity from an extinction-level threat.",
+ summary:"Ryland Grace wakes alone on a spacecraft with no memory of who he is, only to piece together that he is humanity's last hope against a microorganism draining the sun's energy — and an unexpected ally may be his only chance.",
+ characters:["Ryland Grace","Rocky"], themes:["survival","science","friendship"],
+ why:"Fast, funny, and packed with satisfying scientific problem-solving.", similar:["The Martian","Dune"]},
+
+{title:"Pride and Prejudice",author:"Jane Austen",genre:"Romance",year:1813,rating:4.7,pages:432,lang:"English",
+ desc:"Wit and pride collide as Elizabeth Bennet navigates love and class in Regency England.",
+ summary:"Sharp-tongued Elizabeth Bennet clashes with the proud, wealthy Mr. Darcy at a country ball, setting off a slow-burning romance shaped by pride, prejudice, and rigid social expectations.",
+ characters:["Elizabeth Bennet","Mr. Darcy"], themes:["love","class","wit"],
+ why:"The template for enemies-to-lovers romance, still unmatched.", similar:["Beach Read","The Hating Game"]},
+{title:"Beach Read",author:"Emily Henry",genre:"Romance",year:2020,rating:4.3,pages:361,lang:"English",
+ desc:"Two rival writers challenge each other to swap genres for the summer, and sparks follow.",
+ summary:"January Andrews writes happy-ever-afters but can't write after a devastating year. Her new next-door neighbor turns out to be Gus, a rival novelist, and the two challenge each other to write in the other's genre for the summer.",
+ characters:["January Andrews","Augustus Everett"], themes:["grief","creativity","second chances"],
+ why:"Funny, emotional, and grounded in real writerly struggle.", similar:["Pride and Prejudice","Me Before You"]},
+
+{title:"The Silent Patient",author:"Alex Michaelides",genre:"Mystery",year:2019,rating:4.5,pages:325,lang:"English",
+ desc:"A therapist becomes obsessed with treating a woman who hasn't spoken since she was accused of murder.",
+ summary:"Alicia Berenson shoots her husband and never speaks another word. Psychotherapist Theo Faber becomes fixated on breaking her silence, and his investigation uncovers a truth far more unsettling than anyone expected.",
+ characters:["Alicia Berenson","Theo Faber"], themes:["obsession","trauma","secrets"],
+ why:"A tightly plotted twist ending readers rarely see coming.", similar:["Gone Girl","And Then There Were None"]},
+{title:"And Then There Were None",author:"Agatha Christie",genre:"Mystery",year:1939,rating:4.6,pages:272,lang:"English",
+ desc:"Ten strangers are lured to an island and killed off one by one, echoing a nursery rhyme.",
+ summary:"Ten people with dark secrets are invited to an isolated island by a host who never appears. As a recording accuses each guest of a past crime, they die one by one, until the survivors realize the killer must be among them.",
+ characters:["Vera Claythorne","Philip Lombard"], themes:["justice","guilt","isolation"],
+ why:"The gold standard of the locked-room mystery.", similar:["The Silent Patient","Gone Girl"]},
+
+{title:"Gone Girl",author:"Gillian Flynn",genre:"Thriller",year:2012,rating:4.3,pages:432,lang:"English",
+ desc:"A woman's disappearance turns her husband into the prime suspect, unraveling secrets on both sides.",
+ summary:"On their fifth anniversary, Nick Dunne's wife Amy vanishes and signs point to him as her killer. Alternating accounts from Nick and Amy reveal a marriage built on performance and secrets far stranger than anyone suspected.",
+ characters:["Nick Dunne","Amy Dunne"], themes:["marriage","deception","media"],
+ why:"A masterclass in unreliable narration and slow-building dread.", similar:["The Silent Patient","The Da Vinci Code"]},
+{title:"The Da Vinci Code",author:"Dan Brown",genre:"Thriller",year:2003,rating:4.2,pages:454,lang:"English",
+ desc:"A symbologist races to solve a murder puzzle tied to a centuries-old secret society.",
+ summary:"When a curator is found dead in the Louvre beside a cryptic code, symbologist Robert Langdon is pulled into a fast-moving hunt through art, religion, and history to uncover a secret the Church has guarded for centuries.",
+ characters:["Robert Langdon","Sophie Neveu"], themes:["conspiracy","history","puzzles"],
+ why:"A breakneck page-turner built around real art and history.", similar:["Gone Girl","The Girl with the Dragon Tattoo"]},
+
+{title:"The Shining",author:"Stephen King",genre:"Horror",year:1977,rating:4.5,pages:447,lang:"English",
+ desc:"A family's winter at an isolated hotel unravels as its dark history takes hold of the father's mind.",
+ summary:"Jack Torrance takes a job as winter caretaker at the isolated Overlook Hotel, hoping solitude will help him write. As snow cuts them off from the world, the hotel's violent history seeps into Jack's mind, threatening his wife and psychic son.",
+ characters:["Jack Torrance","Danny Torrance"], themes:["isolation","madness","family"],
+ why:"The definitive haunted-house novel from horror's biggest name.", similar:["The Haunting of Hill House","Mexican Gothic"]},
+{title:"Mexican Gothic",author:"Silvia Moreno-Garcia",genre:"Horror",year:2020,rating:4.2,pages:352,lang:"English",
+ desc:"A socialite investigates her cousin's disturbing letters from a decaying manor with a sinister secret.",
+ summary:"After a disturbing letter from her newly married cousin, socialite Noemí Taboada travels to a decaying manor and encounters an unsettling family, strange dreams, and a house hiding something far darker than anyone admits.",
+ characters:["Noemí Taboada","Catalina Doyle"], themes:["colonialism","family secrets","decay"],
+ why:"Atmospheric gothic horror with a sharp, modern edge.", similar:["The Shining","House of Leaves"]},
+
+{title:"All the Light We Cannot See",author:"Anthony Doerr",genre:"Historical Fiction",year:2014,rating:4.6,pages:530,lang:"English",
+ desc:"A blind French girl and a German boy's paths converge amid the devastation of WWII.",
+ summary:"Marie-Laure, a blind girl fleeing occupied Paris, and Werner, a German orphan drafted for his talent with radios, live separate wartime lives that gradually converge in the walled French city of Saint-Malo.",
+ characters:["Marie-Laure LeBlanc","Werner Pfennig"], themes:["war","fate","radio"],
+ why:"Lyrical, deeply human WWII fiction told from both sides.", similar:["The Book Thief","The Nightingale"]},
+{title:"The Book Thief",author:"Markus Zusak",genre:"Historical Fiction",year:2005,rating:4.7,pages:552,lang:"English",
+ desc:"A young girl in Nazi Germany finds solace in stolen books, narrated by Death himself.",
+ summary:"Narrated by Death, the story follows Liesel Meminger, a foster child in Nazi Germany who steals books and shares them with neighbors and a Jewish man her family hides, finding meaning in words during a brutal time.",
+ characters:["Liesel Meminger","Hans Hubermann"], themes:["war","words","found family"],
+ why:"An unforgettable narrator and a story about the power of books.", similar:["All the Light We Cannot See","The Diary of a Young Girl"]},
+
+{title:"Life of Pi",author:"Yann Martel",genre:"Adventure",year:2001,rating:4.4,pages:319,lang:"English",
+ desc:"A shipwrecked boy shares a lifeboat with a Bengal tiger on a survival voyage across the Pacific.",
+ summary:"After a shipwreck kills his family, sixteen-year-old Pi Patel finds himself adrift with an unlikely companion: a Bengal tiger named Richard Parker. Their months at sea become a test of faith, ingenuity, and survival.",
+ characters:["Pi Patel","Richard Parker"], themes:["survival","faith","storytelling"],
+ why:"A survival story that doubles as a meditation on belief.", similar:["Into the Wild","Robinson Crusoe"]},
+{title:"Into the Wild",author:"Jon Krakauer",genre:"Adventure",year:1996,rating:4.5,pages:224,lang:"English",
+ desc:"A young man abandons his possessions to live off the land in the Alaskan wilderness.",
+ summary:"Christopher McCandless gives away his savings and hitchhikes across the country before walking alone into the Alaskan wilderness. Krakauer reconstructs his journey and what drove him to seek total isolation.",
+ characters:["Christopher McCandless"], themes:["freedom","nature","isolation"],
+ why:"A gripping true story about the pull of wilderness and independence.", similar:["Life of Pi","Robinson Crusoe"]},
+
+{title:"1984",author:"George Orwell",genre:"Dystopian",year:1949,rating:4.6,pages:328,lang:"English",
+ desc:"In a totalitarian future, a man begins to question the all-seeing Party and pays a steep price.",
+ summary:"Winston Smith rewrites history for the Ministry of Truth under the constant gaze of Big Brother. When he begins a forbidden love affair and questions the regime, he collides with the Party's machinery of control.",
+ characters:["Winston Smith","Julia"], themes:["surveillance","control","truth"],
+ why:"The definitive novel of surveillance and totalitarian control.", similar:["The Handmaid's Tale","Fahrenheit 451"]},
+{title:"The Hunger Games",author:"Suzanne Collins",genre:"Dystopian",year:2008,rating:4.6,pages:374,lang:"English",
+ desc:"A girl volunteers for a televised fight to the death to save her sister, and becomes a symbol of rebellion.",
+ summary:"When her sister is selected for a televised fight to the death, Katniss Everdeen volunteers in her place. Forced to fight for survival on live TV, her defiance turns her into an unwilling symbol of rebellion.",
+ characters:["Katniss Everdeen","Peeta Mellark"], themes:["rebellion","survival","media"],
+ why:"Breathless pacing with real stakes and a fierce protagonist.", similar:["1984","The Poppy War"]},
+
+{title:"Percy Jackson & the Lightning Thief",author:"Rick Riordan",genre:"Young Adult",year:2005,rating:4.5,pages:377,lang:"English",
+ desc:"A dyslexic twelve-year-old discovers he's the son of a Greek god and is drawn into a quest across America.",
+ summary:"Percy Jackson learns he's a demigod, son of Poseidon, and is accused of stealing Zeus's master lightning bolt. He sets off on a cross-country quest with two friends to clear his name and prevent a war among the gods.",
+ characters:["Percy Jackson","Annabeth Chase","Grover Underwood"], themes:["identity","friendship","mythology"],
+ why:"Fast, funny modern mythology that hooks reluctant readers.", similar:["Mythology","Circe"]},
+{title:"The Fault in Our Stars",author:"John Green",genre:"Young Adult",year:2012,rating:4.5,pages:313,lang:"English",
+ desc:"Two teens with cancer fall in love while grappling with mortality and meaning.",
+ summary:"Hazel, a sixteen-year-old with thyroid cancer, meets Augustus at a support group, and the two fall in love while confronting illness, mortality, and what it means to leave a mark on the world.",
+ characters:["Hazel Grace Lancaster","Augustus Waters"], themes:["love","mortality","meaning"],
+ why:"Honest, funny, and devastating in equal measure.", similar:["Me Before You","Beach Read"]},
+
+{title:"To Kill a Mockingbird",author:"Harper Lee",genre:"Classic Literature",year:1960,rating:4.7,pages:336,lang:"English",
+ desc:"A girl in the Depression-era South watches her father defend a Black man falsely accused of rape.",
+ summary:"Narrated by young Scout Finch, this novel follows her father Atticus as he defends a Black man falsely accused in a racially charged trial, while Scout and her brother confront the moral realities of their small Alabama town.",
+ characters:["Scout Finch","Atticus Finch"], themes:["justice","racism","childhood"],
+ why:"An essential, humane classic about conscience and courage.", similar:["Pride and Prejudice","Wolf Hall"]},
+{title:"Moby-Dick",author:"Herman Melville",genre:"Classic Literature",year:1851,rating:4.0,pages:635,lang:"English",
+ desc:"A sailor joins a whaling captain's obsessive, doomed hunt for a great white whale.",
+ summary:"Ishmael signs aboard the whaling ship Pequod, commanded by the monomaniacal Captain Ahab, whose obsessive quest to kill the white whale that maimed him drives the crew toward a fate none of them can escape.",
+ characters:["Ishmael","Captain Ahab"], themes:["obsession","fate","the sea"],
+ why:"A sprawling, ambitious classic about obsession and the natural world.", similar:["The Old Man and the Sea","Treasure Island"]},
+
+{title:"The Kite Runner",author:"Khaled Hosseini",genre:"Literary Fiction",year:2003,rating:4.6,pages:371,lang:"English",
+ desc:"A man returns to a war-torn Afghanistan to make amends for a childhood betrayal.",
+ summary:"Amir, now living in America, is haunted by a childhood betrayal of his closest friend in Kabul. Years later, a call pulls him back to a Taliban-controlled Afghanistan for one final chance at redemption.",
+ characters:["Amir","Hassan"], themes:["guilt","friendship","redemption"],
+ why:"A powerful story of guilt, friendship, and atonement.", similar:["All the Light We Cannot See","The Nightingale"]},
+{title:"Where the Crawdads Sing",author:"Delia Owens",genre:"Literary Fiction",year:2018,rating:4.5,pages:384,lang:"English",
+ desc:"A girl raised alone in the marshes becomes a murder suspect in her small coastal town.",
+ summary:"Abandoned by her family and raised alone in the North Carolina marshes, Kya becomes a local legend. When a man she was once involved with is found dead, she becomes the town's prime suspect in a case tangled up with nature and prejudice.",
+ characters:["Kya Clark"], themes:["isolation","nature","prejudice"],
+ why:"Atmospheric nature writing wrapped around a courtroom mystery.", similar:["The Kite Runner","To Kill a Mockingbird"]},
+
+{title:"Good Omens",author:"Terry Pratchett & Neil Gaiman",genre:"Comedy",year:1990,rating:4.5,pages:412,lang:"English",
+ desc:"An angel and a demon team up to stop the apocalypse because they've grown fond of Earth.",
+ summary:"An angel and a demon, both rather too comfortable on Earth, team up to stop the apocalypse after a mix-up misplaces the Antichrist, leading to a chaotic race against prophecy, bikers, and bureaucracy.",
+ characters:["Aziraphale","Crowley"], themes:["good vs evil","friendship","absurdity"],
+ why:"Genuinely hilarious fantasy with real warmth underneath the jokes.", similar:["The Hobbit","Mythology"]},
+
+{title:"Milk and Honey",author:"Rupi Kaur",genre:"Poetry",year:2014,rating:4.3,pages:204,lang:"English",
+ desc:"A collection of short, raw poems on love, loss, trauma, and healing.",
+ summary:"Organized into four chapters — the hurting, the loving, the breaking, and the healing — this collection moves through pain and recovery in short, direct, illustrated verses about love, abuse, femininity, and healing.",
+ characters:[], themes:["healing","love","femininity"],
+ why:"Accessible, emotionally direct poetry that's easy to dip into.", similar:["Man's Search for Meaning","The Power of Now"]},
+
+{title:"Atomic Habits",author:"James Clear",genre:"Self-Help",year:2018,rating:4.8,pages:320,lang:"English",
+ desc:"A practical guide to building good habits and breaking bad ones through small, consistent changes.",
+ summary:"Drawing on psychology and neuroscience, this guide breaks habit change into small, repeatable systems built around identity, environment, and tiny incremental improvements, for habits that actually stick.",
+ characters:[], themes:["habits","discipline","self-improvement"],
+ why:"The most practical, actionable habit-building framework around.", similar:["The 7 Habits of Highly Effective People","Thinking, Fast and Slow"]},
+{title:"The 7 Habits of Highly Effective People",author:"Stephen R. Covey",genre:"Self-Help",year:1989,rating:4.6,pages:381,lang:"English",
+ desc:"A framework for personal and professional effectiveness built on principles rather than quick fixes.",
+ summary:"Covey argues lasting effectiveness comes from character and principles, not shortcuts, laying out seven interlocking habits — from being proactive to seeking mutual understanding — for genuine effectiveness.",
+ characters:[], themes:["leadership","character","effectiveness"],
+ why:"A foundational, still-relevant text on personal leadership.", similar:["Atomic Habits","Good to Great"]},
+
+{title:"Thinking, Fast and Slow",author:"Daniel Kahneman",genre:"Psychology",year:2011,rating:4.6,pages:499,lang:"English",
+ desc:"A Nobel laureate explains the two systems that drive how we think and decide.",
+ summary:"Kahneman lays out two modes of thought — fast, intuitive System 1 and slow, deliberate System 2 — and shows how their interplay produces both remarkable efficiency and predictable, costly errors in judgment.",
+ characters:[], themes:["cognition","decision-making","bias"],
+ why:"The essential book on how the mind actually makes decisions.", similar:["Atomic Habits","The Body Keeps the Score"]},
+{title:"The Body Keeps the Score",author:"Bessel van der Kolk",genre:"Psychology",year:2014,rating:4.8,pages:464,lang:"English",
+ desc:"A psychiatrist explains how trauma reshapes the brain and body, and paths toward healing.",
+ summary:"Drawing on decades of research and clinical work, van der Kolk explains how traumatic experience physically reshapes the brain and body, and surveys therapeutic approaches — from talk therapy to yoga — that support recovery.",
+ characters:[], themes:["trauma","healing","neuroscience"],
+ why:"A landmark, compassionate explanation of trauma's physical impact.", similar:["Man's Search for Meaning","Milk and Honey"]},
+
+{title:"Meditations",author:"Marcus Aurelius",genre:"Philosophy",year:180,rating:4.6,pages:254,lang:"English",
+ desc:"A Roman emperor's private notebook of Stoic reflections on duty, mortality, and self-control.",
+ summary:"Written as private notes rather than for publication, this collection of a Roman emperor's Stoic reflections covers duty, mortality, anger, and self-discipline, offering timeless guidance on living with equanimity.",
+ characters:[], themes:["stoicism","duty","mortality"],
+ why:"Two-thousand-year-old wisdom that still lands today.", similar:["Man's Search for Meaning","The Power of Now"]},
+{title:"The Alchemist",author:"Paulo Coelho",genre:"Philosophy",year:1988,rating:4.3,pages:208,lang:"English",
+ desc:"A shepherd travels from Spain to Egypt in pursuit of a recurring dream and his own destiny.",
+ summary:"Santiago, an Andalusian shepherd, sets out for the Egyptian pyramids after a recurring dream, meeting kings, alchemists, and a desert love along the way, learning to listen to his heart and pursue his 'Personal Legend.'",
+ characters:["Santiago"], themes:["destiny","dreams","self-discovery"],
+ why:"A short, fable-like meditation on purpose and following your path.", similar:["Meditations","Into the Wild"]},
+
+{title:"Steve Jobs",author:"Walter Isaacson",genre:"Biography",year:2011,rating:4.6,pages:656,lang:"English",
+ desc:"An unflinching biography of Apple's visionary and famously demanding co-founder.",
+ summary:"Based on extensive interviews with Jobs and those closest to him, this biography traces his path from adopted child to college dropout to the visionary, volatile force behind Apple, Pixar, and products that reshaped industries.",
+ characters:["Steve Jobs","Steve Wozniak"], themes:["innovation","ambition","legacy"],
+ why:"A candid, detailed portrait of one of tech's most complex figures.", similar:["Zero to One","Becoming"]},
+{title:"Becoming",author:"Michelle Obama",genre:"Biography",year:2018,rating:4.8,pages:448,lang:"English",
+ desc:"The former First Lady reflects on her journey from Chicago's South Side to the White House.",
+ summary:"Michelle Obama traces her path from a working-class Chicago childhood through Princeton and Harvard Law, her career, marriage, and the pressures and purpose she found during eight years as First Lady.",
+ characters:[], themes:["identity","ambition","public life"],
+ why:"Candid and warm, with real insight into public and private life.", similar:["Steve Jobs","Long Walk to Freedom"]},
+
+{title:"Rich Dad Poor Dad",author:"Robert Kiyosaki",genre:"Business & Finance",year:1997,rating:4.3,pages:336,lang:"English",
+ desc:"A personal finance classic contrasting two mindsets toward money, assets, and building wealth.",
+ summary:"Kiyosaki contrasts financial lessons from his own father with those of a friend's wealthy father, arguing financial literacy and thinking like an investor matter more for building wealth than a high salary alone.",
+ characters:[], themes:["money","assets","financial literacy"],
+ why:"The book that gets most people thinking differently about money.", similar:["The Intelligent Investor","Zero to One"]},
+{title:"Zero to One",author:"Peter Thiel",genre:"Business & Finance",year:2014,rating:4.4,pages:224,lang:"English",
+ desc:"A startup founder's contrarian case for building genuinely new things instead of copying what works.",
+ summary:"Drawing on co-founding PayPal, Thiel argues true progress comes from creating something genuinely new, going from zero to one, and lays out how founders can identify and build monopoly-level businesses.",
+ characters:[], themes:["innovation","startups","strategy"],
+ why:"Contrarian, opinionated startup thinking from a major investor.", similar:["Rich Dad Poor Dad","The Lean Startup"]},
+
+{title:"Superintelligence",author:"Nick Bostrom",genre:"Technology & AI",year:2014,rating:4.2,pages:352,lang:"English",
+ desc:"A philosopher examines the risks and strategies around the possible rise of machine superintelligence.",
+ summary:"Bostrom explores what happens if machine intelligence surpasses human intelligence, examining possible paths to superintelligence, the control problem, and strategies to make sure such a transition goes well for humanity.",
+ characters:[], themes:["artificial intelligence","risk","the future"],
+ why:"The book that shaped serious debate about AI safety.", similar:["Sapiens","The Pragmatic Programmer"]},
+{title:"The Pragmatic Programmer",author:"Andrew Hunt & David Thomas",genre:"Technology & AI",year:1999,rating:4.5,pages:352,lang:"English",
+ desc:"A field guide of practical habits and principles for writing better software.",
+ summary:"A collection of practical tips, principles, and habits for software developers — covering everything from code hygiene to debugging mindset to career growth — aimed at making engineers more effective and adaptable.",
+ characters:[], themes:["programming","craftsmanship","practical advice"],
+ why:"Still one of the most practical programming books ever written.", similar:["Superintelligence","Atomic Habits"]},
+
+{title:"Cosmos",author:"Carl Sagan",genre:"Science & Math",year:1980,rating:4.7,pages:365,lang:"English",
+ desc:"A wide-ranging, accessible tour of the universe, science, and humanity's place within it.",
+ summary:"Carl Sagan guides readers through the history of the universe, the origins of life, and the methods and wonder of scientific discovery, blending astronomy, biology, and history into an awe-filled tour of the cosmos.",
+ characters:[], themes:["astronomy","discovery","wonder"],
+ why:"Scientific wonder written with genuine poetic warmth.", similar:["A Brief History of Time","Sapiens"]},
+{title:"A Brief History of Time",author:"Stephen Hawking",genre:"Science & Math",year:1988,rating:4.5,pages:256,lang:"English",
+ desc:"A physicist explains black holes, the Big Bang, and the nature of time for a general audience.",
+ summary:"Hawking distills complex cosmology, from the Big Bang to black holes to the nature of time itself, into language accessible to non-scientists, tracing humanity's evolving understanding of the universe's origins and fate.",
+ characters:[], themes:["physics","cosmology","time"],
+ why:"Complex physics made genuinely understandable.", similar:["Cosmos","Sapiens"]},
+
+{title:"Sapiens",author:"Yuval Noah Harari",genre:"History & Politics",year:2011,rating:4.6,pages:443,lang:"English",
+ desc:"A sweeping look at how Homo sapiens came to dominate the planet through myth, cooperation, and culture.",
+ summary:"Tracing humanity from insignificant apes to Earth's dominant species, this book argues that shared myths — religions, nations, money — let Homo sapiens cooperate at a scale no other species could match.",
+ characters:[], themes:["anthropology","civilization","myth"],
+ why:"A sweeping, thought-provoking history of our species.", similar:["Guns, Germs, and Steel","Cosmos"]},
+{title:"Guns, Germs, and Steel",author:"Jared Diamond",genre:"History & Politics",year:1997,rating:4.3,pages:480,lang:"English",
+ desc:"A geographer argues that geography, not race, explains why some societies came to dominate others.",
+ summary:"Diamond argues that environmental and geographic factors, access to domesticable plants and animals, disease resistance, and continental orientation, explain why some societies developed advantages over others, rather than any inherent superiority.",
+ characters:[], themes:["geography","civilization","inequality"],
+ why:"A big-picture theory of history grounded in geography and biology.", similar:["Sapiens","Cosmos"]},
+
+{title:"Eat, Pray, Love",author:"Elizabeth Gilbert",genre:"Travel",year:2006,rating:3.9,pages:334,lang:"English",
+ desc:"A woman travels through Italy, India, and Indonesia to rebuild her life after divorce.",
+ summary:"After a difficult divorce, Elizabeth Gilbert spends a year traveling: eating in Italy, seeking spiritual grounding in an Indian ashram, and finding balance in Bali, in a memoir about self-discovery and healing.",
+ characters:[], themes:["self-discovery","travel","healing"],
+ why:"A candid, funny memoir of rebuilding a life through travel.", similar:["Into the Wild","The Alchemist"]},
+
+{title:"The Power of Now",author:"Eckhart Tolle",genre:"Health & Spirituality",year:1997,rating:4.5,pages:236,lang:"English",
+ desc:"A guide to easing anxiety and suffering by anchoring attention in the present moment.",
+ summary:"Tolle argues most human suffering comes from dwelling in the past or future, offering a spiritual, practical approach to quieting the mind and finding peace by staying anchored in present-moment awareness.",
+ characters:[], themes:["mindfulness","presence","suffering"],
+ why:"A widely read entry point into mindfulness and presence.", similar:["Meditations","Milk and Honey"]},
+{title:"Why We Sleep",author:"Matthew Walker",genre:"Health & Spirituality",year:2017,rating:4.6,pages:368,lang:"English",
+ desc:"A sleep scientist explains why sleep is essential and what happens when we don't get enough.",
+ summary:"Walker lays out decades of sleep research, explaining what happens in the brain and body during sleep, and the serious cognitive, emotional, and physical costs of chronic sleep deprivation in modern life.",
+ characters:[], themes:["sleep","health","science"],
+ why:"Genuinely changes how you think about your nightly routine.", similar:["The Power of Now","Thinking, Fast and Slow"]},
+
+{title:"Mythology",author:"Edith Hamilton",genre:"Mythology",year:1942,rating:4.5,pages:497,lang:"English",
+ desc:"A classic, accessible retelling of Greek, Roman, and Norse myths.",
+ summary:"Hamilton retells the major myths of Greek, Roman, and Norse tradition in clear, accessible prose, covering the gods, heroes, and legendary tales that have shaped Western storytelling for centuries.",
+ characters:["Zeus","Odysseus","Hercules"], themes:["gods","heroism","legend"],
+ why:"The standard, readable introduction to classical mythology.", similar:["Circe","Percy Jackson & the Lightning Thief"]},
+{title:"Circe",author:"Madeline Miller",genre:"Mythology",year:2018,rating:4.6,pages:393,lang:"English",
+ desc:"A minor goddess exiled to a lonely island discovers her own formidable power.",
+ summary:"Born an unimpressive nymph in Helios's halls, Circe discovers witchcraft and is banished to a remote island, where she hones her craft, crosses paths with Odysseus, and transforms into one of myth's most feared figures.",
+ characters:["Circe","Odysseus"], themes:["power","isolation","transformation"],
+ why:"A gorgeous, feminist retelling of Greek myth from the margins.", similar:["Mythology","The Poppy War"]},
+
+{title:"In Cold Blood",author:"Truman Capote",genre:"True Crime",year:1966,rating:4.4,pages:343,lang:"English",
+ desc:"A pioneering true-crime account of a brutal family murder in rural Kansas.",
+ summary:"Capote reconstructs the 1959 murder of a Kansas farm family in painstaking, novelistic detail, following both the victims and their killers to create what's considered the first major work of literary true crime.",
+ characters:["Perry Smith","Richard Hickock"], themes:["violence","justice","rural America"],
+ why:"The book that essentially invented the true-crime genre.", similar:["Gone Girl","The Silent Patient"]},
+
+{title:"Educated",author:"Tara Westover",genre:"Memoir & Essays",year:2018,rating:4.7,pages:334,lang:"English",
+ desc:"A woman raised off the grid in rural Idaho fights her way to a formal education and self-discovery.",
+ summary:"Raised by survivalist parents in the Idaho mountains with no schooling, Tara Westover taught herself enough to be admitted to college at seventeen, and her pursuit of education gradually forces a reckoning with everything she was raised to believe.",
+ characters:[], themes:["education","family","self-discovery"],
+ why:"An extraordinary story about the cost and value of education.", similar:["Becoming","In Cold Blood"]},
+
+{title:"Silent Spring",author:"Rachel Carson",genre:"Nature & Environment",year:1962,rating:4.5,pages:368,lang:"English",
+ desc:"A landmark exposé on the environmental devastation caused by widespread pesticide use.",
+ summary:"Rachel Carson documents the devastating effects of synthetic pesticides like DDT on birds, wildlife, and ecosystems, challenging the chemical industry and the assumption that nature could be indefinitely controlled.",
+ characters:[], themes:["environment","science","activism"],
+ why:"The book widely credited with launching modern environmentalism.", similar:["Cosmos","Why We Sleep"]},
+
+{title:"Open",author:"Andre Agassi",genre:"Sports",year:2009,rating:4.5,pages:400,lang:"English",
+ desc:"A tennis legend's unflinching account of a career he says he never wanted.",
+ summary:"Andre Agassi recounts a tennis career shaped by a domineering father, early burnout, and a complicated relationship with the sport that made him famous, offering one of the most candid athlete memoirs ever written.",
+ characters:["Andre Agassi"], themes:["ambition","identity","sport"],
+ why:"Surprisingly raw and literary for a sports memoir.", similar:["Becoming","Educated"]},
+
+{title:"Salt, Fat, Acid, Heat",author:"Samin Nosrat",genre:"Cooking",year:2017,rating:4.8,pages:480,lang:"English",
+ desc:"A chef breaks cooking down to four essential elements that make food taste good.",
+ summary:"Samin Nosrat argues that nearly all good cooking comes down to balancing four elements — salt, fat, acid, and heat — and teaches readers to cook intuitively by understanding these principles rather than memorizing recipes.",
+ characters:[], themes:["cooking","technique","food"],
+ why:"Teaches you to actually understand cooking, not just follow recipes.", similar:["Eat, Pray, Love","Why We Sleep"]}
+];
+
+/* ---------- Helpers ---------- */
+const byTitle = {};
+books.forEach(b => byTitle[b.title] = b);
+
+function coverStyle(genre){
+  const c = genreColors[genre] || ["#3b5d46","#6f8f5a"];
+  return `background:linear-gradient(135deg, ${c[0]}, ${c[1]});`;
+}
+
+function scoreBook(book, term){
+  const t = term.toLowerCase().trim();
+  const title = book.title.toLowerCase();
+  const author = book.author.toLowerCase();
+  const genre = book.genre.toLowerCase();
+  let score = 0;
+  if (genre === t) score += 6;
+  else if (genre.includes(t) || t.includes(genre)) score += 4;
+  if (title.includes(t)) score += 5;
+  if (author.includes(t)) score += 5;
+  (book.characters||[]).forEach(c => { if (c.toLowerCase().includes(t)) score += 5; });
+  (book.themes||[]).forEach(th => { if (th.toLowerCase().includes(t)) score += 2; });
+  const words = t.split(/\s+/).filter(Boolean);
+  words.forEach(w => {
+    if (w.length < 3) return;
+    if (title.includes(w) || author.includes(w) || genre.includes(w)) score += 1;
+  });
+  Object.entries(genreSynonyms).forEach(([synGenre, terms]) => {
+    if (book.genre !== synGenre) return;
+    terms.forEach(syn => { if (t === syn || t.includes(syn) || syn.includes(t)) score += 6; });
+  });
+  return score;
+}
+
+/* ---------- Card + modal rendering ---------- */
+function bookCard(b){
+  const el = document.createElement('div');
+  el.className = 'book-card';
+  el.innerHTML = `
+    <div class="cover" style="${coverStyle(b.genre)}">
+      <div><span class="cg">${b.genre}</span><div class="ct">${b.title}</div></div>
+    </div>
+    <div class="card-body">
+      <p class="author">by ${b.author}</p>
+      <div class="meta-row"><span class="rating">★ ${b.rating.toFixed(1)}</span><span class="dot">•</span><span>${b.year}</span></div>
+      <p class="desc">${b.desc}</p>
+    </div>`;
+  el.addEventListener('click', () => openModal(b));
+  return el;
+}
+
+function renderGrid(container, list){
+  container.innerHTML = '';
+  list.forEach(b => container.appendChild(bookCard(b)));
+}
+
+function openModal(b){
+  const modal = document.getElementById('modalContent');
+  const charLine = (b.characters||[]).length
+    ? `<div class="m-section"><h4>Main Characters</h4><div>${b.characters.join(', ')}</div></div>` : '';
+  const themeTags = (b.themes||[]).map(t => `<span class="tag">${t}</span>`).join('');
+  const similarLinks = (b.similar||[]).map(s => byTitle[s]
+    ? `<span class="similar-link" data-title="${s}">${s}</span>` : '').join('');
+  modal.innerHTML = `
+    <button class="close-btn" id="closeModal" aria-label="Close">✕</button>
+    <div class="m-cover" style="${coverStyle(b.genre)}"><div class="ct">${b.title}</div></div>
+    <div class="m-body">
+      <p class="m-author">by ${b.author}</p>
+      <div class="m-meta">
+        <span><b>${b.rating.toFixed(1)}</b> ★</span>
+        <span><b>${b.year}</b></span>
+        <span><b>${b.genre}</b></span>
+        <span>${b.pages} pages</span>
+        <span>${b.lang}</span>
+      </div>
+      <div class="m-section"><h4>Summary</h4><p>${b.summary}</p></div>
+      ${charLine}
+      <div class="m-section"><h4>Themes</h4><div>${themeTags || '—'}</div></div>
+      <div class="m-section"><h4>Why you might like it</h4><p>${b.why}</p></div>
+      <div class="m-section"><h4>Similar Books</h4><div>${similarLinks || '—'}</div></div>
+    </div>`;
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('closeModal').addEventListener('click', closeModal);
+  modal.querySelectorAll('.similar-link').forEach(el => {
+    el.addEventListener('click', () => openModal(byTitle[el.dataset.title]));
+  });
+}
+function closeModal(){ document.getElementById('overlay').classList.remove('open'); }
+document.getElementById('overlay').addEventListener('click', e => { if (e.target.id === 'overlay') closeModal(); });
+
+/* ---------- Genre grid + filter dropdown ---------- */
+const genreGrid = document.getElementById('genreGrid');
+const genreFilter = document.getElementById('genreFilter');
+genreFilter.innerHTML = '<option value="">All genres</option>' +
+  genreList.map(([g]) => `<option value="${g}">${g}</option>`).join('');
+
+genreList.forEach(([g, emoji]) => {
+  const count = books.filter(b => b.genre === g).length;
+  const chip = document.createElement('div');
+  chip.className = 'genre-chip';
+  chip.innerHTML = `<span class="emoji">${emoji}</span><span class="name">${g}</span><div class="count">${count} books</div>`;
+  chip.addEventListener('click', () => {
+    genreFilter.value = g;
+    applyFilters();
+    document.getElementById('explore').scrollIntoView({behavior:'smooth'});
+  });
+  genreGrid.appendChild(chip);
+});
+
+/* ---------- Trending & Recommended ---------- */
+function renderTrending(){
+  const top = [...books].sort((a,b) => b.rating - a.rating).slice(0, 6);
+  renderGrid(document.getElementById('trendingGrid'), top);
+}
+function renderRecommended(){
+  const shuffled = [...books].sort(() => Math.random() - 0.5).slice(0, 6);
+  renderGrid(document.getElementById('recGrid'), shuffled);
+}
+renderTrending();
+renderRecommended();
+
+/* ---------- Search + filters + sort ---------- */
+let currentList = [...books];
+let currentHeading = "Explore the Collection";
+
+function applyFilters(){
+  let list = [...currentList];
+  const g = genreFilter.value;
+  if (g) list = list.filter(b => b.genre === g);
+  const sort = document.getElementById('sortFilter').value;
+  if (sort === 'rating') list.sort((a,b) => b.rating - a.rating);
+  else if (sort === 'newest') list.sort((a,b) => b.year - a.year);
+  else if (sort === 'oldest') list.sort((a,b) => a.year - b.year);
+  else if (sort === 'title') list.sort((a,b) => a.title.localeCompare(b.title));
+  document.getElementById('resultsHeading').textContent = currentHeading;
+  renderGrid(document.getElementById('resultsGrid'), list);
+}
+document.getElementById('genreFilter').addEventListener('change', applyFilters);
+document.getElementById('sortFilter').addEventListener('change', applyFilters);
+document.getElementById('clearBtn').addEventListener('click', () => {
+  genreFilter.value = ''; document.getElementById('sortFilter').value = 'rating';
+  currentList = [...books]; currentHeading = "Explore the Collection";
+  document.getElementById('message').style.display = 'none';
+  applyFilters();
+});
+
+function showMessage(text){
+  const m = document.getElementById('message');
+  m.textContent = text; m.style.display = 'block';
+}
+
+function recommend(){
+  const term = document.getElementById('query').value.trim();
+  if (!term){
+    showMessage("Please enter a title, author, genre, character, or topic so I can find something for you!");
+    return;
+  }
+  document.getElementById('message').style.display = 'none';
+  const scored = books.map(b => ({book:b, score:scoreBook(b, term)})).sort((a,b) => b.score - a.score);
+  if (scored[0].score > 0){
+    currentList = scored.filter(s => s.score > 0).map(s => s.book);
+    currentHeading = `Books matching "${term}"`;
+  } else {
+    showMessage(`We couldn't find an exact match for "${term}", but you may enjoy these related books.`);
+    currentList = [...books].sort(() => Math.random() - 0.5).slice(0, 10);
+    currentHeading = "You might also like";
+  }
+  genreFilter.value = '';
+  applyFilters();
+  document.getElementById('explore').scrollIntoView({behavior:'smooth'});
+}
+document.getElementById('go').addEventListener('click', recommend);
+document.getElementById('query').addEventListener('keydown', e => { if (e.key === 'Enter') recommend(); });
+
+applyFilters();
+</script>
+</body>
+</html>

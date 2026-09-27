@@ -30,3 +30,6 @@ def home(request):
 def book_detail(request, pk):
     book = get_object_or_404(Book, pk=pk)
     return render(request, "books/book_detail.html", {"book": book})
+
+def bookverse(request):
+    return render(request, "books/BookVerse.html")
