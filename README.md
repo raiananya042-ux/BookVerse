@@ -51,7 +51,7 @@ http://127.0.0.1:8000/
 
 ## 🌐 Live Demo
 
-**Render:** https://bookverse-xx01.onrender.com/
+**Render:** https://bookverse-xx01.onrender.com/bookverse/
 
 ## 🐙 GitHub
 
