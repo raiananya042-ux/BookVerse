@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ book.title }} - BookVerse</title>
+    <style>
+        body{font-family:Arial;background:#f7f2e9;color:#221c2e;margin:0}
+        nav{background:#2b2350;color:white;padding:18px 8%;font-size:24px;font-weight:bold}
+        .container{max-width:800px;margin:45px auto;background:#fffaf1;padding:35px;border-radius:16px}
+        .cover{background:linear-gradient(135deg,#2b2350,#ff6f59);color:white;padding:40px;border-radius:12px}
+        .rating{color:#c99a3d;font-weight:bold}
+        p{line-height:1.7;color:#5c5468}
+        .back{display:inline-block;background:#2b2350;color:white;padding:10px 15px;border-radius:7px;text-decoration:none}
+    </style>
+</head>
+<body>
+<nav>📚 BookVerse</nav>
+<div class="container">
+    <div class="cover">
+        <h1>{{ book.title }}</h1>
+        <p style="color:white">by {{ book.author }}</p>
+    </div>
+
+    <p class="rating">★ {{ book.rating }} | {{ book.year }} | {{ book.genre }} | {{ book.pages }} pages</p>
+
+    <h2>Summary</h2>
+    <p>{{ book.summary }}</p>
+
+    <h2>Description</h2>
+    <p>{{ book.description }}</p>
+
+    <h2>Main Characters</h2>
+    <p>{{ book.characters|default:"Not specified" }}</p>
+
+    <h2>Themes</h2>
+    <p>{{ book.themes|default:"Not specified" }}</p>
+
+    <a class="back" href="{% url 'home' %}">← Back to Books</a>
+</div>
+</body>
+</html>

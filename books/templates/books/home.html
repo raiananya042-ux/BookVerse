@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BookVerse</title>
+    <style>
+        body{margin:0;font-family:Arial,sans-serif;background:#f7f2e9;color:#221c2e}
+        nav{background:#2b2350;color:white;padding:18px 8%;font-size:24px;font-weight:bold}
+        .hero{background:linear-gradient(135deg,#2b2350,#4a3d82,#ff6f59);color:white;text-align:center;padding:65px 20px}
+        .hero h1{font-size:42px;margin:10px}
+        .hero p{font-size:17px}
+        form{display:flex;max-width:650px;margin:25px auto;gap:10px}
+        input,select,button{padding:14px;border:0;border-radius:8px;font-size:15px}
+        input{flex:1}
+        button{background:#ff6f59;color:white;font-weight:bold;cursor:pointer}
+        .wrap{max-width:1100px;margin:auto;padding:35px 20px}
+        .genres{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:35px}
+        .genres a{background:white;border:1px solid #e4d9c4;padding:10px 15px;border-radius:20px;text-decoration:none;color:#2b2350}
+        .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px}
+        .card{background:#fffaf1;border:1px solid #e4d9c4;border-radius:14px;overflow:hidden}
+        .cover{height:125px;background:linear-gradient(135deg,#3b5d46,#6f8f5a);color:white;padding:18px;display:flex;align-items:end}
+        .cover h3{margin:0;font-size:21px}
+        .body{padding:17px}
+        .body p{color:#5c5468;line-height:1.5}
+        .rating{color:#c99a3d;font-weight:bold}
+        .details{display:inline-block;margin-top:10px;background:#2b2350;color:white;padding:9px 13px;border-radius:7px;text-decoration:none}
+        footer{text-align:center;padding:35px;color:#5c5468}
+    </style>
+</head>
+<body>
+<nav>📚 BookVerse</nav>
+
+<section class="hero">
+    <h1>Find Your Next Favorite Book</h1>
+    <p>Search by title, author, genre, topic or theme.</p>
+    <form method="get">
+        <input type="text" name="q" value="{{ query }}" placeholder="Try: fantasy, finance, AI, Jane Austen...">
+        <button type="submit">Search</button>
+    </form>
+</section>
+
+<div class="wrap">
+    <h2>Explore by Genre</h2>
+    <div class="genres">
+        <a href="/">All</a>
+        {% for genre in genres %}
+        <a href="?genre={{ genre }}">{{ genre }}</a>
+        {% endfor %}
+    </div>
+
+    <h2>Explore the Collection</h2>
+    <div class="grid">
+        {% for book in books %}
+        <div class="card">
+            <div class="cover">
+                <h3>{{ book.title }}</h3>
+            </div>
+            <div class="body">
+                <strong>by {{ book.author }}</strong>
+                <p class="rating">★ {{ book.rating }} &nbsp; | &nbsp; {{ book.year }}</p>
+                <p>{{ book.description }}</p>
+                <p><b>Genre:</b> {{ book.genre }}</p>
+                <a class="details" href="{% url 'book_detail' book.id %}">View Details</a>
+            </div>
+        </div>
+        {% empty %}
+        <p>No books found. Try another search.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<footer>BookVerse — Django Book Recommendation App</footer>
+</body>
+</html>
