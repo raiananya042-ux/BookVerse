@@ -4,7 +4,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "bookverse-demo-secret-key"
 DEBUG = True
-ALLOWED_HOSTS = ["bookverse-xx01.onrender.com"]
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
